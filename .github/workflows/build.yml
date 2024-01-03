@@ -1,0 +1,38 @@
+on:
+  workflow_dispatch:
+
+concurrency:
+  group:
+    ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  build_binaries:
+    defaults:
+      run:
+        shell: bash -el {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python_version: [3.11, 3.12]
+        arch:
+          - x64
+          - ${{ matrix.os == 'macos-latest' ? 'aarch64' : '' }}
+
+    name: Build binary for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          activate-environment: venv
+          environment-file: environment.yml
+      - name: Conda info
+        run: conda info
+      - name: Conda list
+        run: conda list
+      - name: Environment
+        run: printenv | sort
