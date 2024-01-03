@@ -15,10 +15,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: [3.11, 3.12]
-        arch:
-          - x64
-          - ${{ matrix.os == 'macos-latest' ? 'aarch64' : '' }}
+        python-version: [3.11, 3.12]
+        arch: [ x64 ]
+        include:
+          - os: macos-latest
+            python-version: 3.11
+            arch: aarch64
+          - os: macos-latest
+            python-version: 3.12
+            arch: aarch64
 
     name: Build binary for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
