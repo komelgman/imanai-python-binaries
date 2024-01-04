@@ -80,3 +80,7 @@ jobs:
         with:
           artifacts: ./artifacts/*.tar.gz
           allowUpdates: true
+          removeArtifacts: true
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          updateOnlyUnreleased: true
