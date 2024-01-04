@@ -75,10 +75,16 @@ jobs:
           path: ./artifacts
           merge-multiple: true
 
+      - name: md5sum
+        run: |
+          sudo apt-get install -y coreutils
+          cd ./artifacts
+          md5sum * > python-pack-md5sums.txt
+
       - name: attach artifacts to release
         uses: ncipollo/release-action@v1.13.0
         with:
-          artifacts: ./artifacts/*.tar.gz
+          artifacts: ./artifacts/*
           allowUpdates: true
           removeArtifacts: true
           omitNameDuringUpdate: true
