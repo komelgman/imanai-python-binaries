@@ -14,34 +14,48 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.11]
-        arch: [ x64 ]
-#        include:
+        include:
+          - os: ubuntu-latest
+            python-version: 3.11
+            arch: x64
+            artifact-name: python-pack-p311-linux-x86_64.tar.gz
+
+          - os: windows-latest
+            python-version: 3.11
+            arch: x64
+            artifact-name: python-pack-p311-win-x86_64.tar.gz
+
+#          - os: macos-latest
+#            python-version: 3.11
+#            arch: x64
+#            artifact-name: python-pack-p311-mac-x86_64.tar.gz
+#
 #          - os: macos-latest
 #            python-version: 3.11
 #            arch: aarch64
-#          - os: macos-latest
-#            python-version: 3.12
-#            arch: aarch64
+#            artifact-name: python-pack-p311-mac-arm_64.tar.gz
 
-    name: Build binary for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
+    name: Build binary ${{ matrix.artifact-name }} for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3.0.1
         with:
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           activate-environment: venv
           environment-file: environment.yml
-      - name: conda info
-        run: conda info
-      - name: conda list
-        run: conda list
+
       - name: conda install -n base conda-pack
         run: conda install -n base conda-pack
-      - name: conda pack --help
-        run: conda pack --help
-      - name: environment
-        run: printenv | sort
+
+      - name: conda-pack -n venv ...
+        run: |
+          mkdir -p artifacts
+          conda-pack -n venv --exclude *.pyc --exclude *.a --compress-level 9 --format tar.gz --output artifacts/${{ matrix.artifact-name }}
+
+      - name: upload-artifact ${{ matrix.artifact-name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-pack
+          path: artifacts/*.tar.gz
+
