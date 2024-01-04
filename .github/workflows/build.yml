@@ -39,6 +39,8 @@ jobs:
         run: conda info
       - name: conda list
         run: conda list
+      - name: conda install -n base conda
+        run: conda install -n base conda
       - name: conda pack -help
         run: conda pack -help
       - name: environment
