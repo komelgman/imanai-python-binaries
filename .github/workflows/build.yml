@@ -21,25 +21,25 @@ jobs:
           - os: ubuntu-latest
             python-version: 3.11
             arch: x64
-            artifact-name: python-pack-p311-linux-x86_64.tar.gz
+            artifact-name: python-pack-p311-linux-x86_64
             patch: ./venv_patch/posix
 
           - os: windows-latest
             python-version: 3.11
             arch: x64
-            artifact-name: python-pack-p311-win-x86_64.tar.gz
+            artifact-name: python-pack-p311-win-x86_64
             patch: ./venv_patch/win
 
           - os: macos-latest
             python-version: 3.11
             arch: x64
-            artifact-name: python-pack-p311-mac-x86_64.tar.gz
+            artifact-name: python-pack-p311-mac-x86_64
             patch: ./venv_patch/posix
 
           - os: macos-latest
             python-version: 3.11
             arch: aarch64
-            artifact-name: python-pack-p311-mac-arm_64.tar.gz
+            artifact-name: python-pack-p311-mac-arm_64
             patch: ./venv_patch/posix
 
     name: Build binary ${{ matrix.artifact-name }} for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
@@ -59,16 +59,19 @@ jobs:
       - name: conda pack -n venv ...
         run: |
           mkdir -p artifacts
-          conda pack -n venv --exclude *.pyc --exclude *.a --compress-level 9 --format tar.gz --output artifacts/${{ matrix.artifact-name }}
+          conda pack -n venv --exclude *.pyc --exclude *.a --format tar --output artifacts/${{ matrix.artifact-name }}.tar
 
       - name: venv patching
-        run: tar -rzf artifacts/${{ matrix.artifact-name }} -C ${{ matrix.patch }} .
+        run: tar -rf artifacts/${{ matrix.artifact-name }}.tar -C ${{ matrix.patch }} .
 
-      - name: upload-artifact ${{ matrix.artifact-name }}
+      - name: compress tar to tar.gz
+        run: gzip -9 artifacts/${{ matrix.artifact-name }}.tar
+
+      - name: upload-artifact ${{ matrix.artifact-name }}.tar.gz
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}
-          path: ./artifacts/*.tar.gz
+          name: ${{ matrix.artifact-name }}.tar.gz
+          path: ./artifacts/${{ matrix.artifact-name }}.tar.gz
 
   release:
     runs-on: ubuntu-latest
