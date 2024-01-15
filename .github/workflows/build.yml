@@ -22,21 +22,25 @@ jobs:
             python-version: 3.11
             arch: x64
             artifact-name: python-pack-p311-linux-x86_64.tar.gz
+            patch: ./venv_patch/posix
 
           - os: windows-latest
             python-version: 3.11
             arch: x64
             artifact-name: python-pack-p311-win-x86_64.tar.gz
+            patch: ./venv_patch/win
 
-#          - os: macos-latest
-#            python-version: 3.11
-#            arch: x64
-#            artifact-name: python-pack-p311-mac-x86_64.tar.gz
-#
-#          - os: macos-latest
-#            python-version: 3.11
-#            arch: aarch64
-#            artifact-name: python-pack-p311-mac-arm_64.tar.gz
+          - os: macos-latest
+            python-version: 3.11
+            arch: x64
+            artifact-name: python-pack-p311-mac-x86_64.tar.gz
+            patch: ./venv_patch/posix
+
+          - os: macos-latest
+            python-version: 3.11
+            arch: aarch64
+            artifact-name: python-pack-p311-mac-arm_64.tar.gz
+            patch: ./venv_patch/posix
 
     name: Build binary ${{ matrix.artifact-name }} for (python=${{ matrix.python-version }}, os=${{ matrix.os }}, arch=${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
@@ -56,6 +60,9 @@ jobs:
         run: |
           mkdir -p artifacts
           conda pack -n venv --exclude *.pyc --exclude *.a --compress-level 9 --format tar.gz --output artifacts/${{ matrix.artifact-name }}
+
+      - name: venv patching
+        run: tar -rzf artifacts/${{ matrix.artifact-name }} -C ${{ matrix.patch }} .
 
       - name: upload-artifact ${{ matrix.artifact-name }}
         uses: actions/upload-artifact@v4
